@@ -2,7 +2,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from fastapi.concurrency import run_in_threadpool
 from fastapi.openapi.models import Example
-from typing import Annotated, Dict, Optional
+from typing import Annotated, Any, Dict, Optional
 from lucid_docs.core.security import get_current_active_user
 from lucid_docs.models.database import User
 from lucid_docs.services.file_processing import process_pdf
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/upload", tags=["File Upload"])
 @router.post("/pdf", 
              summary="Upload PDF File", 
              description="Process and store a PDF file.",
-             response_model=Dict[str, str])
+             response_model=Dict[str, Any])
 async def upload_pdf(
     file: Annotated[
         UploadFile,
