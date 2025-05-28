@@ -1,7 +1,8 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi.concurrency import run_in_threadpool
 from fastapi.openapi.models import Example
-from typing import Annotated, Optional
+from typing import Annotated, Dict, Optional
 from lucid_docs.core.security import get_current_active_user
 from lucid_docs.models.database import User
 from lucid_docs.services.file_processing import process_pdf
@@ -10,7 +11,10 @@ from lucid_docs.core.config import settings
 
 router = APIRouter(prefix="/upload", tags=["File Upload"])
 
-@router.post("/pdf", summary="Upload PDF File", description="Process and store a PDF file.")
+@router.post("/pdf", 
+             summary="Upload PDF File", 
+             description="Process and store a PDF file.",
+             response_model=Dict[str, str])
 async def upload_pdf(
     file: Annotated[
         UploadFile,
@@ -44,12 +48,13 @@ async def upload_pdf(
               or an error message with a 400 status code if validations fail.
     """
     if file.content_type != "application/pdf":
-        return {"error": "Invalid file format. Only PDF files are accepted."}, 400
+        raise HTTPException(status_code=400, detail="Invalid file format. Only PDF files are accepted.")
 
     if uuid is not None and uuid.version != 4:
-        return {"error": "UUID must be version 4."}, 400
+        raise HTTPException(status_code=400, detail="UUID must be version 4.")
+    
 
-    temp_path = await save_temp_file(file, settings.TEMP_STORAGE_PATH)
-    processed_data = process_pdf(temp_path, file.filename, current_user.username)
+    temp_path = await run_in_threadpool(save_temp_file, file, settings.TEMP_STORAGE_PATH)
+    processed_data = await run_in_threadpool(process_pdf, temp_path, file.filename, current_user.username)
 
     return {"message": "File processed successfully", "metadata": processed_data}

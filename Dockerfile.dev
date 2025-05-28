@@ -30,8 +30,6 @@ COPY tests /app/tests
 
 # RUN pytest /app/tests --maxfail=0 --disable-warnings -q
 
-ENV PYTHONPATH="/app/src"
-
 EXPOSE 8000
 
 CMD ["uvicorn", "lucid_docs.main:create_app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -17,6 +17,8 @@ from lucid_docs.core.config import settings
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 
 # Application secret key and algorithm used for token generation.
+# use openssl to generate a secure key:
+# openssl rand -hex 32
 SECRET_KEY = os.getenv('SECRET_KEY', 'acc16580347786582c001ac2d186dd4a52791d9ba1674974dcbf5ba302b0f6e0')
 ALGORITHM = os.getenv('ALGORITHM', 'HS256')
 

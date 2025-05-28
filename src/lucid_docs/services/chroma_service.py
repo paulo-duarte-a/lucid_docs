@@ -46,4 +46,10 @@ async def query_collection(question: str, username: str, top_k: int = 3):
         | StrOutputParser()
     )
 
-    return await rag_chain.ainvoke(question)
+    try:
+        response = await rag_chain.ainvoke(question)
+    except Exception as e:
+        logger.error(f"Error during RAG chain invocation: {e}")
+        response = "An error occurred while processing your request. Please try again later."
+
+    return response

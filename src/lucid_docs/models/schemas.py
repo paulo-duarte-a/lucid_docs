@@ -1,6 +1,13 @@
 from pydantic import BaseModel, Field, field_validator
 from uuid import UUID
 
+from enum import Enum
+
+
+class RoleEnum(str, Enum):
+    user = "user"
+    assistant = "assistant"
+
 
 class QueryRequest(BaseModel):
     """

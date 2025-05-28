@@ -1,25 +1,18 @@
 import logging
-from datetime import datetime
-import pytz
 from uuid import UUID
-from typing import Annotated
-from fastapi import APIRouter, Depends
+from typing import Annotated, Optional
+from fastapi import APIRouter, Depends, HTTPException
 from lucid_docs.core.security import get_current_active_user
 from lucid_docs.services.chroma_service import query_collection
-from lucid_docs.models.schemas import QueryRequest, QueryResponse
+from lucid_docs.models.schemas import QueryRequest, QueryResponse, RoleEnum
 from lucid_docs.models.database import User, Conversation, Message
 from lucid_docs.dependencies import messages_collection
+from lucid_docs.utils.date import current_utc_timestamp
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
 logger = logging.getLogger(__name__)
 
-def get_api_docstring():
-    """
-    Router for handling chat related queries.
-
-    This module provides endpoints for processing chat related queries.
-    """
 
 @router.post("/", response_model=QueryResponse)
 async def ask_question(
@@ -42,9 +35,9 @@ async def ask_question(
     user_message = Message(
         chat_id=request.chat_id,
         username=current_user.username,
-        role='user',
+        role=RoleEnum.user,
         content=request.question,
-        timestamp=datetime.now(pytz.utc).isoformat()
+        timestamp=current_utc_timestamp()
     )
 
     messages_collection.insert_one(
@@ -56,9 +49,9 @@ async def ask_question(
     assistant_message = Message(
         chat_id=request.chat_id,
         username=current_user.username,
-        role='assistant',
+        role=RoleEnum.assistant,
         content=results,
-        timestamp=datetime.now(pytz.utc).isoformat()
+        timestamp=current_utc_timestamp()
     )
 
     messages_collection.insert_one(
@@ -69,30 +62,45 @@ async def ask_question(
 
 
 @router.get(
-    "/conversation/{id}",
-    response_description="List all messages in the conversation",
+    "/conversation",
+    response_description="List all messages of the user",
     response_model=Conversation,
     response_model_by_alias=False,
 )
-async def list_messages(id: str, current_user: Annotated[User, Depends(get_current_active_user)],):
+@router.get(
+    "/conversation/{id}",
+    response_description="List messages by conversation ID",
+    response_model=Conversation,
+    response_model_by_alias=False,
+)
+async def list_messages(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    id: Optional[str] = None
+):
     """
-    Retrieve all messages in a conversation by its ID.
-    This endpoint fetches all messages associated with a specific conversation ID
-    and returns them in a structured format.
+    Retrieve messages by conversation ID if provided, or all user messages.
+
     Args:
-        id (str): The unique identifier of the conversation.
+        id (Optional[str]): UUIDv4 of the conversation.
+        current_user (User): Authenticated user.
+
     Returns:
-        Conversation: A structured response containing all messages in the conversation.
+        Conversation: Messages from one or all conversations.
     """
-    if not id:
-        raise ValueError("Conversation ID must be provided")
-    if not UUID(id).version == 4:
-        raise ValueError("Conversation ID must be a valid UUID version 4")
+    query = {"username": current_user.username}
 
-    logger.info(f"Fetching messages for conversation ID: {id} by user: {current_user.username}")
+    if id:
+        try:
+            uuid_obj = UUID(id)
+            if uuid_obj.version != 4:
+                raise HTTPException(status_code=400, detail="Conversation ID must be a valid UUID version 4")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid UUID format")
 
-    conversation_messages = await messages_collection.find({
-        "chat_id": id, "username": current_user.username
-    }).to_list(length=None)
+        query["chat_id"] = id
+        logger.info(f"Fetching messages for conversation ID: {id} by user: {current_user.username}")
+    else:
+        logger.info(f"Fetching all messages for user: {current_user.username}")
 
+    conversation_messages = await messages_collection.find(query).to_list(length=None)
     return Conversation(messages=conversation_messages)

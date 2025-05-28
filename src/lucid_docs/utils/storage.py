@@ -4,9 +4,9 @@ import uuid
 
 from fastapi import UploadFile
 
-async def save_temp_file(file: UploadFile, temp_dir: str) -> Path:
+def save_temp_file(file: UploadFile, temp_dir: str) -> Path:
     """
-    Asynchronously save an uploaded file to a temporary directory.
+    Save an uploaded file to a temporary directory.
 
     This function takes an UploadFile object and a specified temporary directory path,
     generates a unique filename with a .pdf extension using UUID, and writes the file's
