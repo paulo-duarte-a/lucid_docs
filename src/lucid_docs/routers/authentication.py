@@ -93,7 +93,7 @@ async def register_user(
         )
 
     user.password = get_password_hash(user.password)
-    await users_collection.insert_one(user.dict())
+    await users_collection.insert_one(user.model_dump(by_alias=True, exclude={"id"}))
 
     return User(
         username=user.username,
