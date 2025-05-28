@@ -102,6 +102,10 @@ lucid_docs/
 └── main.py         # Ponto de entrada da aplicação
 ```
 
+### Referencias
+* https://github.com/google-gemini/cookbook/blob/main/examples/langchain/Gemini_LangChain_QA_Chroma_WebLoad.ipynb
+* https://fastapi.tiangolo.com/tutorial/
+
 ## Contribuição 🤝
 1. Faça um fork do projeto
 2. Crie sua branch (`git checkout -b feature/nova-feature`)
