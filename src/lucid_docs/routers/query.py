@@ -1,5 +1,6 @@
 import logging
 from uuid import UUID
+from pymongo import ASCENDING
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from lucid_docs.core.security import get_current_active_user
@@ -99,8 +100,28 @@ async def list_messages(
 
         query["chat_id"] = id
         logger.info(f"Fetching messages for conversation ID: {id} by user: {current_user.username}")
+        conversation_messages = await messages_collection.find(query).to_list(length=None)
     else:
         logger.info(f"Fetching all messages for user: {current_user.username}")
+        pipeline = [
+            {"$match": {"username": current_user.username}},
+            {"$sort": {"timestamp": ASCENDING}},
+            {"$group": {
+                "_id": "$chat_id",
+                "chat_id": {"$first": "$chat_id"},
+                "username": {"$first": "$username"},
+                "role": {"$first": "$role"},
+                "timestamp": {"$first": "$timestamp"},
+                "first_message": {"$first": "$content"},
+            }},
+            {"$project": {
+                "chat_id": 1,
+                "username": 1,
+                "role": 1,
+                "timestamp": 1,
+                "content": {"$substrCP": ["$first_message", 0, 30]}
+            }}
+        ]
+        conversation_messages = await messages_collection.aggregate(pipeline).to_list(length=None)
 
-    conversation_messages = await messages_collection.find(query).to_list(length=None)
     return Conversation(messages=conversation_messages)
