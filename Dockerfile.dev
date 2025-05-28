@@ -22,13 +22,14 @@ COPY src /app/src
 # Instalar dependências
 RUN poetry install --no-interaction --no-ansi --no-root
 
+# Copiar o entrypoint
+COPY entrypoint.sh /app/entrypoint.sh
+
 # Instalar pytest
 RUN poetry add --dev pytest
 
 # Copiar o restante
 COPY tests /app/tests
-
-# RUN pytest /app/tests --maxfail=0 --disable-warnings -q
 
 EXPOSE 8000
 

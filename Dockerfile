@@ -22,6 +22,9 @@ COPY pyproject.toml poetry.lock ./
 # Instalar dependências de produção
 RUN poetry install --no-interaction --no-ansi --no-root --only main
 
+# Copiar o entrypoint
+COPY entrypoint.sh /app/entrypoint.sh
+
 # Copiar código fonte
 COPY src ./src
 
