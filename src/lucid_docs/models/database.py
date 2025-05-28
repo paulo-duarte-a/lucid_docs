@@ -18,7 +18,7 @@ class User(BaseModel):
     username: str = Field(
         min_length=3,
         max_length=30,
-        constraints={"regex": r"^[a-zA-Z0-9_]+$"},
+        pattern=r"^[a-zA-Z0-9_]+$",
         description="Unique username for authentication"
     )
     email: Optional[EmailStr] = Field(default=None)
@@ -71,7 +71,7 @@ class Message(BaseModel):
     username: str = Field(
         min_length=3,
         max_length=30,
-        constraints={"regex": r"^[a-zA-Z0-9_]+$"},
+        pattern=r"^[a-zA-Z0-9_]+$",
         description="Sender's username"
     )
     role: str = Field(

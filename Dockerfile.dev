@@ -23,14 +23,14 @@ COPY src /app/src
 RUN poetry install --no-interaction --no-ansi --no-root
 
 # Instalar pytest
-# RUN poetry add --dev pytest
+RUN poetry add --dev pytest
 
-# # Copiar o restante
-# COPY tests /app/tests
-
-# ENV PYTHONPATH="/app/src"
+# Copiar o restante
+COPY tests /app/tests
 
 # RUN pytest /app/tests --maxfail=0 --disable-warnings -q
+
+ENV PYTHONPATH="/app/src"
 
 EXPOSE 8000
 

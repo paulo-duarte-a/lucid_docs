@@ -9,7 +9,7 @@ class QueryRequest(BaseModel):
     Attributes:
         question (str): The question to be queried.
         top_k (int): Number of relevant chunks to retrieve from the vector database.
-        chat_id (UUID): UUID of the chat to associate the query.
+        chat_id (str): UUID of the chat to associate the query.
     """
     question: str
     top_k: int = Field(

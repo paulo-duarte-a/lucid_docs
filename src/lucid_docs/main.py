@@ -9,7 +9,7 @@ from contextvars import ContextVar
 from fastapi import FastAPI
 from fastapi import Request, Response
 
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger import json as jsonlogger
 
 from lucid_docs.routers import upload, query, authentication
 from lucid_docs.core.config import settings

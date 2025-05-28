@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from lucid_docs.dependencies import chroma
+from lucid_docs.dependencies import get_chroma
 
 def process_pdf(file_path: Path, filename: str, username: str, chat_id: str = None):
     """
@@ -40,7 +40,7 @@ def process_pdf(file_path: Path, filename: str, username: str, chat_id: str = No
 
         split.metadata.update(metadata)
 
-    chroma.add_documents(documents=splits)
+    get_chroma().add_documents(documents=splits)
 
     return {
         "status": "processed",

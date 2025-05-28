@@ -26,28 +26,53 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # OAuth2 token scheme for authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
-# Initialize embeddings service for Google Generative AI
-embeddings = GoogleGenerativeAIEmbeddings(
-    model=settings.EMBEDDING_MODEL,
-    google_api_key=settings.GEMINI_API_KEY
-)
+embeddings = None  # Global variable to hold the embeddings service instance
 
-# Initialize language model for Google Generative AI
-llm = ChatGoogleGenerativeAI(
-    model=settings.LLM_MODEL,
-    google_api_key=settings.GEMINI_API_KEY,
-    temperature=0
-)
+def get_embeddings():
+    # Initialize embeddings service for Google Generative AI
+    global embeddings
 
-# Persistent client for Chroma
-client = PersistentClient(path=settings.CHROMA_PERSIST_DIR)
+    if embeddings:
+        return embeddings
 
-# Chroma instance linking the persistent client with the embeddings function for document collections
-chroma = Chroma(
-    client=client,
-    collection_name=settings.CHROMA_COLLECTION_NAME,
-    embedding_function=embeddings
-)
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model=settings.EMBEDDING_MODEL,
+        google_api_key=settings.GEMINI_API_KEY
+    )
+    return embeddings
+
+llm = None  # Global variable to hold the language model instance
+
+def get_llm():
+    # Initialize language model for Google Generative AI
+    global llm
+    if llm:
+        return llm
+
+    llm = ChatGoogleGenerativeAI(
+        model=settings.LLM_MODEL,
+        google_api_key=settings.GEMINI_API_KEY,
+        temperature=0
+    )
+    return llm
+
+chroma = None  # Global variable to hold the Chroma instance
+
+def get_chroma():
+    global chroma
+    if chroma:
+        return chroma
+
+    # Persistent client for Chroma
+    client = PersistentClient(path=settings.CHROMA_PERSIST_DIR)
+
+    # Chroma instance linking the persistent client with the embeddings function for document collections
+    chroma = Chroma(
+        client=client,
+        collection_name=settings.CHROMA_COLLECTION_NAME,
+        embedding_function=get_embeddings()
+    )
+    return chroma
 
 # Async MongoDB client initialization
 mongo_client = AsyncIOMotorClient(settings.MONGO_URI)
