@@ -22,12 +22,15 @@ COPY src /app/src
 # Instalar dependências
 RUN poetry install --no-interaction --no-ansi --no-root
 
-# Copiar o restante
-COPY tests /app/tests
+# Instalar pytest
+# RUN poetry add --dev pytest
 
-# Configurar variáveis de ambiente
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app/src
+# # Copiar o restante
+# COPY tests /app/tests
+
+# ENV PYTHONPATH="/app/src"
+
+# RUN pytest /app/tests --maxfail=0 --disable-warnings -q
 
 EXPOSE 8000
 

@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gemini-2.0-flash"
     LOG_FORMAT: str = "json"
     LOG_LEVEL: str = "INFO"
+    MONGO_URI: str = "mongodb://localhost:27017/lucid_docs"
+    MONGO_DB_NAME: str = "lucid_docs"
 
 
     class Config:
