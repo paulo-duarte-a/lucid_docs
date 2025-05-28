@@ -42,6 +42,7 @@ RUN apt-get update && \
 COPY --from=builder /root/.local /root/.local
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src /app/src
+COPY --from=builder /app/entrypoint.sh /app/entrypoint.sh
 
 # Configurar environment variables
 ENV PYTHONUNBUFFERED=1
@@ -49,8 +50,8 @@ ENV PYTHONPATH=/app/src
 ENV PATH="/app/.venv/bin:${PATH}"
 
 # Usuário não-root
-RUN useradd -m -u 1001 appuser
-USER appuser
+# RUN useradd -m -u 1001 appuser
+# USER appuser
 
 # Porta da aplicação
 EXPOSE 8000
