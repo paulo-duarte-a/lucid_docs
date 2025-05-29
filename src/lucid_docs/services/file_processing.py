@@ -1,8 +1,13 @@
 from datetime import datetime
 from pathlib import Path
+import logging
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from lucid_docs.dependencies import get_chroma
+
+
+logger = logging.getLogger(__name__)
+
 
 def process_pdf(file_path: Path, filename: str, username: str, chat_id: str = None):
     """
@@ -36,7 +41,8 @@ def process_pdf(file_path: Path, filename: str, username: str, chat_id: str = No
             "timestamp": datetime.now().isoformat()
         }
         if chat_id:
-            metadata["chat_id"] = chat_id
+            logger.debug(f"Adding chat_id {chat_id} to metadata for split.")
+            metadata["chat_id"] = str(chat_id)
 
         split.metadata.update(metadata)
 

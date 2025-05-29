@@ -29,7 +29,7 @@ async def upload_pdf(
         ),
     ],
     current_user: Annotated[User, Depends(get_current_active_user)],
-    uuid: Annotated[Optional[UUID], Form(description="UUIDv4 identifier for the process")] = None
+    chat_id: Annotated[UUID, Form(description="UUIDv4 identifier for the process")]
 ):
     """
     Upload and process a PDF file.
@@ -41,7 +41,7 @@ async def upload_pdf(
     Args:
         file (UploadFile): The PDF file to be uploaded.
         current_user (User): The current active user.
-        uuid (Optional[UUID]): An optional UUIDv4 identifier.
+        chat_id (Optional[UUID]): An optional UUIDv4 identifier.
 
     Returns:
         dict: A confirmation message and metadata if the file was processed successfully,
@@ -50,11 +50,11 @@ async def upload_pdf(
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Invalid file format. Only PDF files are accepted.")
 
-    if uuid is not None and uuid.version != 4:
+    if chat_id is not None and chat_id.version != 4:
         raise HTTPException(status_code=400, detail="UUID must be version 4.")
     
 
     temp_path = await run_in_threadpool(save_temp_file, file, settings.TEMP_STORAGE_PATH)
-    processed_data = await run_in_threadpool(process_pdf, temp_path, file.filename, current_user.username)
+    processed_data = await run_in_threadpool(process_pdf, temp_path, file.filename, current_user.username, str(chat_id))
 
     return {"message": "File processed successfully", "metadata": processed_data}

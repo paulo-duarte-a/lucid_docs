@@ -45,8 +45,8 @@ async def ask_question(
         user_message.model_dump(by_alias=True, exclude=["id"])
     )
 
-    results = await query_collection(request.question, current_user.username, request.top_k)
-    
+    results = await query_collection(request.question, current_user.username, request.chat_id, request.top_k)
+
     assistant_message = Message(
         chat_id=request.chat_id,
         username=current_user.username,
