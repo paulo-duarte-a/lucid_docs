@@ -9,7 +9,7 @@ from lucid_docs.models.database import User, UserInDB
 from lucid_docs.dependencies import pwd_context
 from lucid_docs.dependencies import SECRET_KEY, ALGORITHM
 from lucid_docs.dependencies import oauth2_scheme
-from lucid_docs.dependencies import users_collection
+from lucid_docs.core.database import database
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -49,6 +49,7 @@ async def get_user(username: str) -> Optional[UserInDB]:
     Returns:
         Optional[UserInDB]: The user object if found, None otherwise.
     """
+    users_collection = database.get_collection("users")
     user_data = await users_collection.find_one({"username": username})
     if user_data is not None:
         return UserInDB(**user_data)

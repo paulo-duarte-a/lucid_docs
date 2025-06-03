@@ -14,6 +14,8 @@ from passlib.context import CryptContext
 from langchain_chroma import Chroma
 from chromadb import PersistentClient
 from lucid_docs.core.config import settings
+from lucid_docs.core.database import get_users_collection, get_messages_collection
+
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 
 # Application secret key and algorithm used for token generation.
@@ -76,8 +78,10 @@ def get_chroma():
     )
     return chroma
 
-# Async MongoDB client initialization
-mongo_client = AsyncIOMotorClient(settings.MONGO_URI)
-mongo_db = mongo_client[settings.MONGO_DB_NAME]
-users_collection = mongo_db["users"]
-messages_collection = mongo_db["messages"]
+
+async def get_users_collection_dep() -> AsyncIOMotorClient:
+    return await get_users_collection()
+
+
+async def get_messages_collection_dep() -> AsyncIOMotorClient:
+    return await get_messages_collection()

@@ -5,13 +5,15 @@ Authentication routes for user login, registration, and retrieval of current use
 from datetime import timedelta
 from typing import Annotated
 
+from motor.motor_asyncio import AsyncIOMotorCollection
+
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from lucid_docs.core.security import get_password_hash
 from lucid_docs.models.database import User, UserInDB
 from lucid_docs.models.schemas import Token
-from lucid_docs.dependencies import users_collection
+from lucid_docs.dependencies import get_users_collection_dep
 
 from lucid_docs.core.security import (
     authenticate_user,
@@ -73,6 +75,7 @@ async def read_users_me(
 @router.post("/users/register/", response_model=User)
 async def register_user(
     user: UserInDB,
+    users_collection: AsyncIOMotorCollection = Depends(get_users_collection_dep)
 ):
     """
     Register a new user.

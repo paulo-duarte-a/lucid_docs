@@ -21,6 +21,7 @@ dependencies = [
     "passlib (>=1.7.4,<2.0.0)",
     "motor (>=3.7.1,<4.0.0)",
     "pytz (>=2025.2,<2026.0)",
+    "slowapi (>=0.1.9,<0.2.0)",
 ]
 
 [tool.poetry]

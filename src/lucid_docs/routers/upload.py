@@ -11,6 +11,8 @@ from lucid_docs.core.config import settings
 
 router = APIRouter(prefix="/upload", tags=["File Upload"])
 
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
 @router.post("/pdf", 
              summary="Upload PDF File", 
              description="Process and store a PDF file.",
@@ -52,7 +54,9 @@ async def upload_pdf(
 
     if chat_id is not None and chat_id.version != 4:
         raise HTTPException(status_code=400, detail="UUID must be version 4.")
-    
+
+    if file.size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail=f"File size exceeds the maximum limit of {MAX_FILE_SIZE / (1024 * 1024)} MB.")
 
     temp_path = await run_in_threadpool(save_temp_file, file, settings.TEMP_STORAGE_PATH)
     processed_data = await run_in_threadpool(process_pdf, temp_path, file.filename, current_user.username, str(chat_id))

@@ -1,13 +1,14 @@
 import logging
 from uuid import UUID
 from pymongo import ASCENDING
+from motor.motor_asyncio import AsyncIOMotorCollection
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from lucid_docs.core.security import get_current_active_user
 from lucid_docs.services.chroma_service import query_collection
 from lucid_docs.models.schemas import QueryRequest, QueryResponse, RoleEnum
 from lucid_docs.models.database import User, Conversation, Message
-from lucid_docs.dependencies import messages_collection
+from lucid_docs.dependencies import get_messages_collection_dep
 from lucid_docs.utils.date import current_utc_timestamp
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
@@ -18,7 +19,8 @@ logger = logging.getLogger(__name__)
 @router.post("/", response_model=QueryResponse)
 async def ask_question(
     request: QueryRequest, 
-    current_user: Annotated[User, Depends(get_current_active_user)]
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    messages_collection: AsyncIOMotorCollection = Depends(get_messages_collection_dep)
 ):
     """
     Process a chat query request and return the corresponding results.
@@ -41,7 +43,7 @@ async def ask_question(
         timestamp=current_utc_timestamp()
     )
 
-    messages_collection.insert_one(
+    await messages_collection.insert_one(
         user_message.model_dump(by_alias=True, exclude=["id"])
     )
 
@@ -55,7 +57,7 @@ async def ask_question(
         timestamp=current_utc_timestamp()
     )
 
-    messages_collection.insert_one(
+    await messages_collection.insert_one(
         assistant_message.model_dump(by_alias=True, exclude=["id"])
     )
    
@@ -76,6 +78,7 @@ async def ask_question(
 )
 async def list_messages(
     current_user: Annotated[User, Depends(get_current_active_user)],
+    messages_collection: AsyncIOMotorCollection = Depends(get_messages_collection_dep),
     id: Optional[str] = None
 ):
     """

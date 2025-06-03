@@ -13,6 +13,7 @@ from pythonjsonlogger import json as jsonlogger
 
 from lucid_docs.routers import upload, query, authentication
 from lucid_docs.core.config import settings
+from lucid_docs.core.database import database
 
 
 track_id_var: ContextVar[str] = ContextVar("track_id", default="-")
@@ -121,9 +122,17 @@ async def lifespan(app: FastAPI):
     chroma_path = Path(settings.CHROMA_PERSIST_DIR)
     chroma_path.mkdir(parents=True, exist_ok=True)
     logging.info(f"ChromaDB directory: {chroma_path.absolute()}")
-    
+
+    try:
+        await database.connect()
+        logging.info("Database connection established")
+    except Exception as e:
+        logging.error(f"Failed to connect to the database: {e}")
+        raise
+
     yield
 
+    await database.disconnect()
     logging.info("Application terminated")
     
 
@@ -159,6 +168,14 @@ def create_app() -> FastAPI:
         """
         Health check endpoint to confirm the service is running.
         """
-        return {"status": "ok"}
+        health_info = {
+            "status": "ok",
+            "services": {}
+        }
+        db_health = await database.health_check()
+        health_info["services"]["database"] = db_health
+        if not health_info["services"]["database"]:
+            health_info["status"] = "degraded"
+        return health_info
 
     return app
