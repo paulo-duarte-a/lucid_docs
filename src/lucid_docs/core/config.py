@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     MONGO_URI: str = "mongodb://localhost:27017/lucid_docs"
     MONGO_DB_NAME: str = "lucid_docs"
 
-
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
